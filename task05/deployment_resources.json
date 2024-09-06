@@ -50,7 +50,7 @@
   },
   "Events": {
     "resource_type": "dynamodb_table",
-    "hash_key_name": "Id",
+    "hash_key_name": "id",
     "hash_key_type": "N",
     "sort_key_type": "",
     "sort_key_name": "",

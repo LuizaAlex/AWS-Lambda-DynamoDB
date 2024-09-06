@@ -65,24 +65,25 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
             // Save the item to the DynamoDB table
             table.putItem(newItem);
 
-			Map<String, Object> responseBody = new HashMap<>();
-            responseBody.put("id", id);
-            responseBody.put("eventType", eventType);  // Include eventType in the response body
-
-            // Convert the response body map to JSON string
-            String bodyJson = convertObjectToJson(responseBody);
-
-            // Set the response status code and body
-            response.setStatusCode(201);  // Set status code to 201
-            response.setBody(bodyJson);
-            response.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
-
-        } catch (Exception e) {
-            context.getLogger().log("Error saving event: " + e.getMessage());
-            response.setStatusCode(500);
-            response.setBody("{\"message\": \"Failed to process the request\"}");
-        }
-
+			   // Prepare the response
+			   Map<String, Object> responseBody = new HashMap<>();
+			   responseBody.put("id", id);
+	   
+			   // Convert response body to JSON string
+			   String bodyJson = convertObjectToJson(responseBody);
+	   
+			   // Set the status code and response body
+			   response.setStatusCode(201); // Ensure statusCode is set to 201
+			   response.setBody(bodyJson);
+			   response.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
+	   
+		   } catch (Exception e) {
+			   context.getLogger().log("Error saving event: " + e.getMessage());
+			   response.setStatusCode(500);
+			   response.setBody("{\"message\": \"Failed to process the request\"}");
+			   response.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
+		   }
+	   
         return response;
     }
 
