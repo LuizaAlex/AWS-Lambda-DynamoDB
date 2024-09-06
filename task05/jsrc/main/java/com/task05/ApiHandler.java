@@ -37,6 +37,8 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
  	private final DynamoDB dynamoDB;
     private final ObjectMapper objectMapper;
 
+    
+
     public ApiHandler() {
         this.dynamoDB = new DynamoDB(AmazonDynamoDBClientBuilder.defaultClient());
         this.objectMapper = new ObjectMapper();
@@ -44,52 +46,49 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
-     
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
         String tableName = System.getenv("target_table");
-    
+
         try {
             // Parse the incoming request body
             Map<String, Object> requestBody = objectMapper.readValue(request.getBody(), Map.class);
-    
-            // Generate attributes
+
+            // Extract event data from the request body
             String id = UUID.randomUUID().toString();
-            int principalId = 10; // Change to int to match expected number type
+            Integer principalId = (Integer) requestBody.get("principalId");
             String createdAt = java.time.Instant.now().toString();
-            Map<String, Object> body = requestBody;
-    
+            Map<String, Object> body = (Map<String, Object>) requestBody.get("content");
+
             // Create a new item for the DynamoDB table
             Table table = dynamoDB.getTable(tableName);
             Item newItem = new Item()
-                .withPrimaryKey("id", id)  // Ensure key matches schema
-                .withNumber("principalId", principalId)  // Use withNumber for numerical value
+                .withPrimaryKey("id", id)
+                .withNumber("principalId", principalId)
                 .withString("createdAt", createdAt)
                 .withMap("body", body);
-    
+
             // Save the item to the DynamoDB table
             table.putItem(newItem);
-    
-          
-    
-    
-            // Prepare the response body with statusCode
+
+            // Prepare the response
             Map<String, Object> responseBody = new HashMap<>();
-            responseBody.put("statusCode", 201);  // Add statusCode here
+            responseBody.put("statusCode", 201); // Include statusCode in the body
             responseBody.put("id", id);
-    
-            // Convert the response body to JSON
-            String bodyJson = convertObjectToJson(responseBody);
-    
-            // Set response details
-            response.setStatusCode(201);
-            response.setBody(bodyJson);
-            response.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
+            responseBody.put("principalId", principalId);
+            responseBody.put("createdAt", createdAt);
+            responseBody.put("body", body);
+
+            response.setStatusCode(200); // HTTP status code
+            response.setBody(convertObjectToJson(responseBody)); // Include the body in the response
         } catch (Exception e) {
             context.getLogger().log("Error saving event: " + e.getMessage());
-            response.setStatusCode(500);
-            response.setBody("{\"message\": \"Failed to process the request\"}");
+            Map<String, Object> errorResponseBody = new HashMap<>();
+            errorResponseBody.put("statusCode", 500); // Include statusCode in the body for error
+            errorResponseBody.put("message", "Failed to process the request");
+            response.setStatusCode(500); // HTTP status code
+            response.setBody(convertObjectToJson(errorResponseBody)); // Include the error body in the response
         }
-    
+
         return response;
     }
 
