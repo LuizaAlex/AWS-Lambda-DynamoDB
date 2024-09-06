@@ -52,6 +52,7 @@
     "resource_type": "dynamodb_table",
     "hash_key_name": "Id",
     "hash_key_type": "N",
+    "sort_key_type": "S",
     "sort_key_name": "EventType",
     "read_capacity": 1,
     "write_capacity": 1,
