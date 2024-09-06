@@ -19,6 +19,7 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Collections;
 
 @LambdaHandler(
     lambdaName = "api_handler",
@@ -64,12 +65,18 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
             // Save the item to the DynamoDB table
             table.putItem(newItem);
 
-            // Prepare the response
 			Map<String, Object> responseBody = new HashMap<>();
-			responseBody.put("id", id);  
-			
-			response.setStatusCode(201); 
-			response.setBody(convertObjectToJson(responseBody)); 
+            responseBody.put("id", id);
+            responseBody.put("eventType", eventType);  // Include eventType in the response body
+
+            // Convert the response body map to JSON string
+            String bodyJson = convertObjectToJson(responseBody);
+
+            // Set the response status code and body
+            response.setStatusCode(201);  // Set status code to 201
+            response.setBody(bodyJson);
+            response.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
+
         } catch (Exception e) {
             context.getLogger().log("Error saving event: " + e.getMessage());
             response.setStatusCode(500);
