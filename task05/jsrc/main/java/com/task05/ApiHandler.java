@@ -54,7 +54,7 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
     
             // Generate attributes
             String id = UUID.randomUUID().toString();
-            String principalId = "10"; // Example static value, adjust as needed
+            int principalId = 10; // Change to int to match expected number type
             String createdAt = java.time.Instant.now().toString();
             Map<String, Object> body = requestBody;
     
@@ -62,12 +62,15 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
             Table table = dynamoDB.getTable(tableName);
             Item newItem = new Item()
                 .withPrimaryKey("id", id)  // Ensure key matches schema
-                .withString("principalId", principalId)
+                .withNumber("principalId", principalId)  // Use withNumber for numerical value
                 .withString("createdAt", createdAt)
                 .withMap("body", body);
     
             // Save the item to the DynamoDB table
             table.putItem(newItem);
+    
+          
+    
     
             // Prepare the response body with statusCode
             Map<String, Object> responseBody = new HashMap<>();
