@@ -12,8 +12,6 @@
             "dynamodb:PutItem",
             "dynamodb:Batch*",
             "dynamodb:DeleteItem",
-            "ssm:PutParameter",
-            "ssm:GetParameter",
             "kms:Decrypt"
           ],
           "Effect": "Allow",
@@ -55,7 +53,6 @@
     "hash_key_name": "Id",
     "hash_key_type": "N",
     "sort_key_name": "EventType",
-    "sort_key_type": "S",
     "read_capacity": 1,
     "write_capacity": 1,
     "global_indexes": [],

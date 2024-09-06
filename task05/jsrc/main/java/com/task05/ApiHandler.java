@@ -33,7 +33,7 @@ import java.util.UUID;
 
 
 public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
- private final DynamoDB dynamoDB;
+ 	private final DynamoDB dynamoDB;
     private final ObjectMapper objectMapper;
 
     public ApiHandler() {
@@ -65,12 +65,11 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
             table.putItem(newItem);
 
             // Prepare the response
-            Map<String, Object> responseBody = new HashMap<>();
-            responseBody.put("id", id);
-            responseBody.put("eventType", eventType);
-
-            response.setStatusCode(201);
-            response.setBody(convertObjectToJson(responseBody));
+			Map<String, Object> responseBody = new HashMap<>();
+			responseBody.put("id", id);  /
+			
+			response.setStatusCode(201); 
+			response.setBody(convertObjectToJson(responseBody)); 
         } catch (Exception e) {
             context.getLogger().log("Error saving event: " + e.getMessage());
             response.setStatusCode(500);
