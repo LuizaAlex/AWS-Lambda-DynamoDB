@@ -44,46 +44,49 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
+     
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
         String tableName = System.getenv("target_table");
-
+    
         try {
             // Parse the incoming request body
             Map<String, Object> requestBody = objectMapper.readValue(request.getBody(), Map.class);
-
-            // Extract event data from the request body
+    
+            // Generate attributes
             String id = UUID.randomUUID().toString();
-            String eventType = (String) requestBody.get("eventType");
-
+            String principalId = "10"; // Example static value, adjust as needed
+            String createdAt = java.time.Instant.now().toString();
+            Map<String, Object> body = requestBody;
+    
             // Create a new item for the DynamoDB table
             Table table = dynamoDB.getTable(tableName);
             Item newItem = new Item()
-                .withPrimaryKey("Id", id)
-                .withString("EventType", eventType)
-                .withMap("body", requestBody);
-
+                .withPrimaryKey("id", id)  // Ensure key matches schema
+                .withString("principalId", principalId)
+                .withString("createdAt", createdAt)
+                .withMap("body", body);
+    
             // Save the item to the DynamoDB table
             table.putItem(newItem);
-
-			   // Prepare the response
-			   Map<String, Object> responseBody = new HashMap<>();
-			   responseBody.put("id", id);
-	   
-			   // Convert response body to JSON string
-			   String bodyJson = convertObjectToJson(responseBody);
-	   
-			   // Set the status code and response body
-			   response.setStatusCode(201); // Ensure statusCode is set to 201
-			   response.setBody(bodyJson);
-			   response.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
-	   
-		   } catch (Exception e) {
-			   context.getLogger().log("Error saving event: " + e.getMessage());
-			   response.setStatusCode(500);
-			   response.setBody("{\"message\": \"Failed to process the request\"}");
-			   response.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
-		   }
-	   
+    
+            // Prepare the response body with statusCode
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("statusCode", 201);  // Add statusCode here
+            responseBody.put("id", id);
+    
+            // Convert the response body to JSON
+            String bodyJson = convertObjectToJson(responseBody);
+    
+            // Set response details
+            response.setStatusCode(201);
+            response.setBody(bodyJson);
+            response.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
+        } catch (Exception e) {
+            context.getLogger().log("Error saving event: " + e.getMessage());
+            response.setStatusCode(500);
+            response.setBody("{\"message\": \"Failed to process the request\"}");
+        }
+    
         return response;
     }
 
